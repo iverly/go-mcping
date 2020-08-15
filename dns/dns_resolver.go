@@ -23,7 +23,7 @@ func (r *resolver) SetInternalResolver(internalResolver *net.Resolver) {
 	r.internalResolver = internalResolver
 }
 
-func (r resolver) SRVResolve(host string) (bool, string, uint16) {
+func (r *resolver) SRVResolve(host string) (bool, string, uint16) {
 	_, srvs, err := r.internalResolver.LookupSRV(
 		context.Background(), "minecraft", "tcp", host,
 	)
@@ -32,4 +32,3 @@ func (r resolver) SRVResolve(host string) (bool, string, uint16) {
 	}
 	return true, srvs[0].Target[:len(srvs[0].Target)-1], srvs[0].Port
 }
-

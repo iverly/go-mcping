@@ -5,9 +5,8 @@ type PingResponse struct {
 	Online   int            `json:"online"`
 	Max      int            `json:"max"`
 	Protocol int            `json:"protocol"`
-	Favicon  []byte         `json:"favicon"`
+	Favicon  string         `json:"favicon"`
 	Motd     string         `json:"motd"`
-	Server   string         `json:"server"`
 	Version  string         `json:"version"`
 	Sample   []PlayerSample `json:"sample"`
 }
