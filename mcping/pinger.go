@@ -14,20 +14,34 @@ type pinger struct {
 	Latency types.Latency
 }
 
+// Create a new Minecraft Pinger
 func NewPinger() *pinger {
 	var resolver types.DnsResolver
 	resolver = dns.NewResolver()
 	return &pinger{DnsResolver: resolver}
 }
 
+// Create a new Minecraft Pinger with a custom DNS resolver
 func NewPingerWithDnsResolver(dnsResolver types.DnsResolver) *pinger {
 	return &pinger{DnsResolver: dnsResolver}
 }
 
+// Ping and get information from an host and port, default timeout: 3s
+// Return a pointer to types.PingResponse or an error
+//
+// Error is thrown when the host is unreachable or the data received are incorrect
+//
+// Example: pinger.Ping("play.hypixel.net", 25565)
 func (p *pinger) Ping(host string, port uint16) (*types.PingResponse, error) {
 	return p.PingWithTimeout(host, port, 3 * time.Second)
 }
 
+// Ping and get information from an host and port with a custom timeout
+// Return a pointer to types.PingResponse or an error
+//
+// Error is thrown when the host is unreachable or the data received are incorrect
+//
+// Example: pinger.Ping("play.hypixel.net", 25565, 5 * time.Second)
 func (p *pinger) PingWithTimeout(host string, port uint16, timeout time.Duration) (*types.PingResponse, error) {
 	resolve, hostSRV, portSRV := p.DnsResolver.SRVResolve(host)
 	if resolve {

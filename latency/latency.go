@@ -10,6 +10,7 @@ type latency struct {
 	latency uint64
 }
 
+// Create an new Latency
 func NewLatency() *latency {
 	return &latency{}
 }
