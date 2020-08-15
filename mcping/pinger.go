@@ -3,6 +3,7 @@ package mcping
 import (
 	"github.com/iverly/go-mcping/api/types"
 	"github.com/iverly/go-mcping/dns"
+	"github.com/iverly/go-mcping/latency"
 	"net"
 	"strconv"
 	"time"
@@ -10,6 +11,7 @@ import (
 
 type pinger struct {
 	DnsResolver types.DnsResolver
+	Latency types.Latency
 }
 
 func NewPinger() *pinger {
@@ -33,7 +35,10 @@ func (p *pinger) PingWithTimeout(host string, port uint16, timeout time.Duration
 		port = portSRV
 	}
 
+	lat := latency.NewLatency()
+	lat.Start()
 	addr := host + ":" + strconv.Itoa(int(port))
+
 	// Open connection to server
 	conn, err := net.DialTimeout("tcp", addr, timeout)
 	if err != nil {
@@ -46,5 +51,9 @@ func (p *pinger) PingWithTimeout(host string, port uint16, timeout time.Duration
 	if err != nil {
 		return nil, err
 	}
-	return decodeResponse(response), nil
+
+	lat.End()
+	decode := decodeResponse(response)
+	decode.Latency = uint(lat.Latency())
+	return decode, nil
 }

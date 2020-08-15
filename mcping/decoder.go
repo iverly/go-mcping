@@ -40,10 +40,14 @@ func decodePlayersSimple(jq *jsonq.JsonQuery) []types.PlayerSample {
 }
 
 func decodeMotd(jq *jsonq.JsonQuery) string {
-	tm, _ := jq.ArrayOfObjects("description", "extra")
-	var sb strings.Builder
-	for k := range tm {
-		sb.WriteString(tm[k]["text"].(string))
+	tm, err := jq.ArrayOfObjects("description", "extra")
+	if err == nil {
+		var sb strings.Builder
+		for k := range tm {
+			sb.WriteString(tm[k]["text"].(string))
+		}
+		return sb.String()
 	}
-	return sb.String()
+	s, _ := jq.String("description")
+	return s
 }
