@@ -1,12 +1,16 @@
 package types
 
 type PingResponse struct {
-	Latency  uint           `json:"latency"`
-	Online   int            `json:"online"`
-	Max      int            `json:"max"`
-	Protocol int            `json:"protocol"`
-	Favicon  string         `json:"favicon"`
-	Motd     string         `json:"motd"`
-	Version  string         `json:"version"`
-	Sample   []PlayerSample `json:"sample"`
+	Latency     uint
+	PlayerCount PlayerCount
+	Protocol    int
+	Favicon     string
+	Motd        string
+	Version     string
+	Sample      []PlayerSample
+}
+
+type PlayerCount struct {
+	Online int
+	Max    int
 }

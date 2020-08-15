@@ -12,14 +12,16 @@ func decodeResponse(response string) *types.PingResponse  {
 	dec := json.NewDecoder(strings.NewReader(response))
 	dec.Decode(&d)
 	jq := jsonq.NewQuery(d)
-
 	presp := &types.PingResponse{}
 
 	presp.Sample = decodePlayersSimple(jq)
 	presp.Motd = decodeMotd(jq)
 
-	presp.Online, _ = jq.Int("players", "online")
-	presp.Max, _ = jq.Int("players", "max")
+	count := types.PlayerCount{}
+	count.Online, _ = jq.Int("players", "online")
+	count.Max, _ = jq.Int("players", "max")
+
+	presp.PlayerCount = count
 	presp.Protocol, _ = jq.Int("version", "protocol")
 	presp.Favicon, _ = jq.String("favicon")
 	presp.Version, _ = jq.String("version", "name")
