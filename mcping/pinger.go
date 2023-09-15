@@ -1,17 +1,19 @@
 package mcping
 
 import (
-	"github.com/iverly/go-mcping/api/types"
-	"github.com/iverly/go-mcping/dns"
-	"github.com/iverly/go-mcping/latency"
+	"errors"
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/iverly/go-mcping/api/types"
+	"github.com/iverly/go-mcping/dns"
+	"github.com/iverly/go-mcping/latency"
 )
 
 type pinger struct {
 	DnsResolver types.DnsResolver
-	Latency types.Latency
+	Latency     types.Latency
 }
 
 // Create a new Minecraft Pinger
@@ -33,7 +35,7 @@ func NewPingerWithDnsResolver(dnsResolver types.DnsResolver) *pinger {
 //
 // Example: pinger.Ping("play.hypixel.net", 25565)
 func (p *pinger) Ping(host string, port uint16) (*types.PingResponse, error) {
-	return p.PingWithTimeout(host, port, 3 * time.Second)
+	return p.PingWithTimeout(host, port, 3*time.Second)
 }
 
 // Ping and get information from an host and port with a custom timeout
@@ -61,13 +63,29 @@ func (p *pinger) PingWithTimeout(host string, port uint16, timeout time.Duration
 	defer conn.Close()
 
 	sendPacket(host, port, &conn)
-	response, err := readResponse(&conn)
-	if err != nil {
-		return nil, err
+	type Response struct {
+		Response string
+		Error    error
 	}
+	result := make(chan Response, 1)
+	go func() {
+		response, err := readResponse(&conn)
+		result <- Response{
+			Response: response,
+			Error:    err,
+		}
+	}()
+	select {
+	case <-time.After(timeout):
+		return nil, errors.New("timed out while reading server response")
+	case result := <-result:
+		if result.Error != nil {
+			return nil, result.Error
+		}
 
-	lat.End()
-	decode := decodeResponse(response)
-	decode.Latency = uint(lat.Latency())
-	return decode, nil
+		lat.End()
+		decode := decodeResponse(result.Response)
+		decode.Latency = uint(lat.Latency())
+		return decode, nil
+	}
 }
